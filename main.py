@@ -2,7 +2,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QLayout, QGridLayout
 from PyQt5.QtWidgets import QTextEdit, QLineEdit, QToolButton, QLabel
-
 from url import Url
 
 class SearchStore(QWidget):
@@ -22,7 +21,7 @@ class SearchStore(QWidget):
         self.searchButton.clicked.connect(self.searchClicked)
         searchStoreLayout.addWidget(self.searchButton, 0, 1)
 
-        self.resultLabel = QLabel('                <조회 결과>                ', self)
+        self.resultLabel = QLabel('                  <조회 결과>                ', self)
         self.resultLabel.setAlignment(Qt.AlignVCenter)
         font = self.resultLabel.font()
         font.setFamily('Times New Roman')
@@ -32,13 +31,14 @@ class SearchStore(QWidget):
 
         searchStoreLayout.addWidget(self.resultLabel, 1, 0)
 
-        self.typeEdit = QTextEdit()
-        self.typeEdit.setReadOnly(True)
-        self.typeEdit.setAlignment(Qt.AlignCenter)
-        text_font = self.typeEdit.font()
-        text_font.setPointSize(text_font.pointSize() )
-        self.typeEdit.setFont(text_font)
-        searchStoreLayout.addWidget(self.typeEdit, 2, 0)
+        self.resultEdit = QTextEdit()
+        self.resultEdit.setReadOnly(True)
+        self.resultEdit.setAlignment(Qt.AlignCenter)
+        self.resultEdit.setFixedWidth(400)
+        text_font = self.resultEdit.font()
+        text_font.setPointSize(self.resultEdit.fontPointSize() + 10)
+        self.resultEdit.setFont(text_font)
+        searchStoreLayout.addWidget(self.resultEdit, 2, 0)
 
         self.newSearchButton = QToolButton()
         self.newSearchButton.setText('Research')
@@ -54,7 +54,7 @@ class SearchStore(QWidget):
 
     def startSearch(self):
         self.url = Url()
-
+        self.resultEdit.clear()
 
     def searchClicked(self):
         inputName = self.nameInput.text()
@@ -62,23 +62,19 @@ class SearchStore(QWidget):
 
         self.result_lst = self.url.get_data(inputName)
         print(self.result_lst)
-        try:
-            if self.result_lst[0] == '모범음식점':
-                self.mobum_text = ("상호명 '" + str(inputName) + "'" + "은 모범음식점 업소 입니다.")
-                self.add_text = ("주소: " + str(self.result_lst[0]))
-                self.tell_text = ("전화번호: " + str(self.result_lst[2]))
-            else:
-                self.mobum_text = ("상호명 '" + str(inputName) + "'" + "은 모범음식점이 취소된 업소입니다.")
-                self.add_text = ("주소: " + str(self.result_lst[0]))
-                self.tell_text = ("모범음식점 취소 사유는 다음과 같습니다,: " + self.result_lst[2])
+        if self.result_lst == False:
+            self.errorTxt = ('해당 음식점을 조회할 수 없습니다.')
+            self.resultEdit.setPlainText(self.errorTxt)
+        else:
+            self.showResult(self.result_lst, inputName)
 
-            self.typeEdit.setText(self.mobum_text)
-            self.typeEdit.setText(self.add_text)
-            self.typeEdit.setText(self.tell_text)
 
-        except IndexError as e:
-            self.text = ('해당 음식점을 조회할 수 없습니다.')
-            self.typeEdit.setText(self.text)
+    def showResult(self, data, keyname):
+        result_txt = ""
+
+        result_txt += ('해당 업소는 <' + data[0] + '> 입니다.\n' + data[1])
+
+        self.resultEdit.setPlainText(result_txt)
 
 if __name__ == '__main__':
     import sys
