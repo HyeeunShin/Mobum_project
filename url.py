@@ -1,8 +1,7 @@
 from typing import List, Any
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-from multiprocessing import Pool
-
+from elasticsearch import Elasticsearch
 
 class Url:
 
@@ -21,21 +20,21 @@ class Url:
 
     def get_link(self, how):
 
-        if how == 'cancel':
-            url = self.cancel
-            last = 311
-        else:
+        if how == 'mobum':
             url = self.mobum
             last = 200
+        else:
+            url = self.cancel
+            last = 311
 
-        store_url = url + str(last) + '/'
+        store_url = url + str(last) + '/'  # url 자료 개수 지정
         store_html = urlopen(store_url)
-        html = BeautifulSoup(store_html, 'html.parser')
+        html = BeautifulSoup(store_html, 'html.parser')     # 깔끔한 url
+
         self.storeName = html.find_all('upso_nm')
         self.address = html.find_all('site_addr_rd')
         if url == self.mobum:
             self.ifm = html.find_all('upso_site_telno')
-            self.tp = 0
         else:
             self.ifm = html.find_all('asgn_cancel_why')
             self.tp = 1
@@ -45,24 +44,33 @@ class Url:
             self.address_lst.append(self.address[i].text)
             self.ifm_lst.append(self.ifm[i].text)
 
-        return self.name_lst, self.address_lst, self.ifm_lst, self.tp
+
+        return self.name_lst, self.ifm_lst, self.address_lst
 
     def get_data(self, name):
-        self.mb_nm_lst, self.mb_addr_lst, self.mbTel_lst, self.t = self.get_link('mobum')
-        self.cc_nm_lst, self.cc_addr_lst, self.ccWhy_lst, self.p = self.get_link('cancel')
-        
+        self.mb_nm_lst, self.mbTel_lst , self.mb_addr_lst= self.get_link('mobum')
+
         if name in self.mb_nm_lst:
             idx = self.mb_nm_lst.index(name)
-            data = [self.mb_addr_lst[idx], self.mbTel_lst[idx]]
-        else:
-            idx = self.cc_nm_lst.index(name)
-            data = [self.cc_addr_lst[idx], self.ccWhy_lst[idx]]
+            mbData = ['모범음식점 업소', 'Tel : ' + self.mbTel_lst[idx], self.mb_addr_lst[idx]]
 
-        return data
+        else:
+            return self.get_cancel_data(name)
+        return mbData
+
+    def get_cancel_data(self, name):
+        self.cc_nm_lst, self.ccWhy_lst, self.cc_addr_lst= self.get_link('cancel')
+        if name in self.cc_nm_lst:
+            idx = self.cc_nm_lst.index(name)
+            ccData = ['모범음식점 취소 업소', '사유 : ' + self.ccWhy_lst[idx], self.cc_addr_lst[idx]]
+        else:
+            return False
+        return ccData
+
+
 if __name__ == '__main__':
     u = Url()
-
-    a = u.get_data('갈비둥지 어해랑')
     b = u.get_data('낙지사랑')
-    print(u.get_data('갈비둥지 어해랑'))
+    a = u.get_data('갈비둥지 어해랑')
     print(b)
+    print(a)
