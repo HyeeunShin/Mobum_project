@@ -9,6 +9,8 @@ class SearchStore(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.url = Url()
+        self.all_strFrame = self.url.get_link()
 
         self.nameInput = QLineEdit()
         searchStoreLayout = QGridLayout()
@@ -33,10 +35,8 @@ class SearchStore(QWidget):
         searchStoreLayout.addWidget(self.resultLabel, 1, 0)
 
         self.dataView = QTableView()
-        self.url = Url()
-        self.default_data = self.url.get_link()
         searchStoreLayout.addWidget(self.dataView, 2, 0)
-        self.model = pandasModel(self.default_data)
+        self.model = pandasModel(self.all_strFrame)
         self.dataView.setModel(self.model)
         font = self.dataView.font()
         font.setPointSize(font.pointSize() + 5)
@@ -57,8 +57,9 @@ class SearchStore(QWidget):
 
     def startSearch(self):
         self.nameInput.clear()
-        self.model = pandasModel(self.default_data)
+        self.model = pandasModel(self.all_strFrame)
         self.dataView.setModel(self.model)
+        self.dataView.resizeColumnsToContents()
 
     def searchClicked(self):
         inputName = self.nameInput.text()
@@ -70,7 +71,7 @@ class SearchStore(QWidget):
             if reply == QMessageBox.Ok:
                 self.startSearch()
 
-        result = self.url.get_data(inputName)
+        result = self.url.get_data(inputName, self.all_strFrame)
         model = pandasModel(result)
         self.dataView.setModel(model)
         self.dataView.resizeColumnsToContents()
