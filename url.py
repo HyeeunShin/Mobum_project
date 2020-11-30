@@ -46,11 +46,9 @@ class Url:
             self.strInfor["Address"] = self.address_lst
 
         df = DataFrame(self.strInfor)
-        print(type(df))
         return df
 
-    def get_data(self, name):
-        strFrame = self.get_link()
+    def get_data(self, name, strFrame):
         data_lst = strFrame[strFrame['Name'] == name]
 
         return data_lst
