@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QTableView
-from PyQt5.QtWidgets import QLayout, QGridLayout
+from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QLineEdit, QToolButton, QLabel
 from url import Url
 from dataFrame import pandasModel
@@ -49,11 +49,10 @@ class SearchStore(QWidget):
 
         searchStoreLayout.addWidget(self.newSearchButton, 4, 1)
 
-
         mainLayout = QGridLayout()
         mainLayout.addLayout(searchStoreLayout, 0, 0)
         self.setLayout(mainLayout)
-        self.setWindowTitle('모범음식점 조회하기')
+        self.setWindowTitle('WIB-Where Is the moBum!')
 
     def startSearch(self):
         self.nameInput.clear()
