@@ -5,7 +5,6 @@ from pandas import DataFrame
 
 
 class Url:
-
     def __init__(self):
         self.mobum = ('http://openapi.sb.go.kr:8088/584d49536d61733232364570647146/xml/SbModelRestaurantDesignate/1/200')
         self.cancel = ('http://openapi.sb.go.kr:8088/716f776d576173323738506a6e6c62/xml/SbModelRestaurantCancel/1/311')
@@ -33,7 +32,6 @@ class Url:
                 lenNum = 311
                 label = '모범음식점 취소업소'
 
-
             for i in range(0, lenNum - 1):
                 self.name_lst.append(self.storeName[i].text)
                 self.ifm_lst.append(self.ifm[i].text)
@@ -56,8 +54,9 @@ class Url:
 
 if __name__ == '__main__':
     u = Url()
-    a = u.get_data('갈비둥지 어해랑')
-    b = u.get_data('낙지사랑')
+    url = u.get_link()
+    a = u.get_data('갈비둥지 어해랑', url)
+    b = u.get_data('낙지사랑', url)
     print(a)
     print(b)
     print(type(b))
