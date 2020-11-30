@@ -1,8 +1,9 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QTableView
 from PyQt5.QtWidgets import QLayout, QGridLayout
-from PyQt5.QtWidgets import QTextEdit, QLineEdit, QToolButton, QLabel
+from PyQt5.QtWidgets import QLineEdit, QToolButton, QLabel
 from url import Url
+from dataFrame import pandasModel
 
 class SearchStore(QWidget):
 
@@ -21,8 +22,8 @@ class SearchStore(QWidget):
         self.searchButton.clicked.connect(self.searchClicked)
         searchStoreLayout.addWidget(self.searchButton, 0, 1)
 
-        self.resultLabel = QLabel('                  <조회 결과>                ', self)
-        self.resultLabel.setAlignment(Qt.AlignVCenter)
+        self.resultLabel = QLabel('<조회 결과>', self)
+        self.resultLabel.setAlignment(Qt.AlignCenter)
         font = self.resultLabel.font()
         font.setFamily('Times New Roman')
         font.setBold(True)
@@ -31,54 +32,54 @@ class SearchStore(QWidget):
 
         searchStoreLayout.addWidget(self.resultLabel, 1, 0)
 
-        self.resultEdit = QTextEdit()
-        self.resultEdit.setReadOnly(True)
-        self.resultEdit.setAlignment(Qt.AlignCenter)
-        self.resultEdit.setFixedWidth(400)
-        text_font = self.resultEdit.font()
-        text_font.setPointSize(self.resultEdit.fontPointSize() + 10)
-        self.resultEdit.setFont(text_font)
-        searchStoreLayout.addWidget(self.resultEdit, 2, 0)
+        self.dataView = QTableView()
+        self.url = Url()
+        self.default_data = self.url.get_link()
+        searchStoreLayout.addWidget(self.dataView, 2, 0)
+        self.model = pandasModel(self.default_data)
+        self.dataView.setModel(self.model)
+        font = self.dataView.font()
+        font.setPointSize(font.pointSize() + 5)
+        self.dataView.resizeColumnsToContents()
 
         self.newSearchButton = QToolButton()
-        self.newSearchButton.setText('Research')
+        self.newSearchButton.setText('처음으로')
         self.newSearchButton.clicked.connect(self.startSearch)
-        searchStoreLayout.addWidget(self.newSearchButton, 3, 1)
+        self.newSearchButton.setFixedSize(100, 40)
+
+        searchStoreLayout.addWidget(self.newSearchButton, 4, 1)
+
 
         mainLayout = QGridLayout()
         mainLayout.addLayout(searchStoreLayout, 0, 0)
         self.setLayout(mainLayout)
-        self.setWindowTitle('Search Store')
-
-        self.startSearch()
+        self.setWindowTitle('모범음식점 조회하기')
 
     def startSearch(self):
-        self.url = Url()
-        self.resultEdit.clear()
+        self.nameInput.clear()
+        self.model = pandasModel(self.default_data)
+        self.dataView.setModel(self.model)
 
     def searchClicked(self):
         inputName = self.nameInput.text()
         self.nameInput.clear()
 
-        self.result_lst = self.url.get_data(inputName)
-        print(self.result_lst)
-        if self.result_lst == False:
-            self.errorTxt = ('해당 음식점을 조회할 수 없습니다.')
-            self.resultEdit.setPlainText(self.errorTxt)
-        else:
-            self.showResult(self.result_lst, inputName)
+        if inputName == '':
+            reply = QMessageBox.warning(self, 'Message', '업소명을 입력하세요.',
+                                          QMessageBox.Ok, QMessageBox.Ok)
+            if reply == QMessageBox.Ok:
+                self.startSearch()
 
-
-    def showResult(self, data, keyname):
-        result_txt = ""
-
-        result_txt += ('해당 업소는 <' + data[0] + '> 입니다.\n' + data[1])
-
-        self.resultEdit.setPlainText(result_txt)
+        result = self.url.get_data(inputName)
+        model = pandasModel(result)
+        self.dataView.setModel(model)
+        self.dataView.resizeColumnsToContents()
 
 if __name__ == '__main__':
     import sys
+
     app = QApplication(sys.argv)
     sStore = SearchStore()
+    sStore.setGeometry(500, 150, 1000, 600)
     sStore.show()
     sys.exit(app.exec_())
